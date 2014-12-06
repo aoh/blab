@@ -1,0 +1,18 @@
+htmlish {
+
+   # tag list courtesy of $ lynx -nonumbers -dump http://meiert.com/en/indices/html-elements/ | grep " yes "  | sed -e 's/ */"/' -e 's/ .*/" |/' | fmt
+   tag = "a" | "abbr" | "access" | "acronym" | "action" | "addEventListener" | "address" | "applet" | "area" | "article" | "aside" | "audio" | "b" | "base" | "basefont" | "bdo" | "big" | "blockcode" | "blockquote" | "body" | "br" | "button" | "canvas" | "caption" | "center" | "cite" | "code" | "col" | "colgroup" | "command" | "datalist" | "dd" | "del" | "delete" | "details" | "dfn" | "di" | "dir" | "dispatch" | "dispatchEvent" | "div" | "dl" | "dt" | "em" | "embed" | "fieldset" | "figcaption" | "figure" | "font" | "footer" | "form" | "frame" | "frameset" | "group" | "h" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "head" | "header" | "hgroup" | "hr" | "html" | "i" | "iframe" | "img" | "input" | "ins" | "insert" | "isindex" | "kbd" | "keygen" | "l" | "label" | "legend" | "li" | "link" | "listener" | "listing" | "load" | "map" | "mark" | "menu" | "message" | "meta" | "meter" | "model" | "nav" | "noframes" | "noscript" | "object" | "ol" | "optgroup" | "option" | "output" | "p" | "param" | "plaintext" | "pre" | "preventDefault" | "progress" | "q" | "range" | "rb" | "rbc" | "rebuild" | "recalculate" | "refresh" | "removeEventListener" | "repeat" | "reset" | "revalidate" | "rp" | "rt" | "rtc" | "ruby" | "s" | "samp" | "script" | "secret" | "section" | "select" | "select1" | "send" | "separator" | "setfocus" | "setindex" | "setvalue" | "small" | "source" | "span" | "standby" | "stopPropagation" | "strike" | "strong" | "style" | "sub" | "submit" | "summary" | "sup" | "switch" | "table" | "tbody" | "td" | "textarea" | "tfoot" | "th" | "thead" | "time" | "title" | "tr" | "track" | "trigger" | "tt" | "u" | "ul" | "upload" | "var" | "video" | "wbr" | "xmp"
+      # and some relics
+      "marquee" | "blink" | "scroll"
+
+  # fixme: just occasional css styling
+  maybe-attrs = "" | ("" | ("" | (legacy-attr | " style=\"" css.exps "\"")))
+  
+  legacy-attr = " " ("width" | "align" | "height") "=\"" num.number "\""
+
+  html = "<" tag maybe-attrs ">" html* "</" tag ">"   # <- note, will usually *not* close the same tag 
+       | "a"*
+
+  page = html{1,10}
+
+}

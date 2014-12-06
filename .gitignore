@@ -1,0 +1,8 @@
+bin/blab
+blab.c
+doc/blab.1.gz
+owl-lisp
+seal-of-quality
+settings.scm
+blab.fasl
+blab.fasl.ok

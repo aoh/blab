@@ -1,0 +1,145 @@
+##
+## HTML
+##
+
+html32 {
+
+   page = "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 3.2 Final//EN\">"
+      "<HTML>"
+      head
+      body
+      "</HTML>"
+
+   head = "<HEAD>" 
+      maybe-title 
+      maybe-isindex 
+      maybe-base
+      maybe-meta
+   "</HEAD>"
+
+   maybe-title = "" | "<TITLE>" str.string "</TITLE>"
+
+   maybe-isindex = "" | "<ISINDEX PROMPT=\"" str.string "\">"
+
+   maybe-base = "" | "<BASE href=\"" url "\">"
+
+   # fixme: no interesting http-equiv names or values 
+   maybe-meta = "" | "<META " ("NAME" | "HTTP-EQUIV") "=\"" str.string "\" CONTENT=\"" str.string "\">" maybe-meta
+
+   maybe-link = "" | "<LINK" maybe-rel maybe-rev " HREF=\"" url "\">"
+
+   link-relation = "top" | "contents" | "index" | "glossary" | "copyright" | "next" | "previous" | "help" | "search" | "shortcut" | "icon"
+
+   maybe-rel = "" | " REL=" link-relation
+
+   maybe-rev = "" | " REV=" link-relation
+   
+   color = "#" num.hex {6,6} | "white" 
+
+   background = "\"" url "\""
+
+   body = "<BODY" 
+      ("" | " bgcolor=" color)
+      ("" | " text=" color)
+      ("" | " link=" color)
+      ("" | " vlink=" color)
+      ("" | " alink=" color)
+      ("" | " background=" background)
+      ">" content{1,10} "</BODY>"
+
+   maybe-align = "" | " ALIGN=" ("CENTER" | "LEFT" | "RIGHT")
+   # H
+   heading-mid =  maybe-align ">" stringish-content
+   heading 
+    = "<H1" heading-mid "</H1>"
+    | "<H2" heading-mid "</H2>"
+    | "<H3" heading-mid "</H3>"
+    | "<H4" heading-mid "</H4>"
+
+   # ADDRESS
+   address = "<ADDRESS>" stringish-content "</ADDRESS>"
+
+   # P
+   paragraph = "<P" maybe-align ">" stringish-content
+
+   # LI
+   list-elem = "<LI" 
+      ("" | " TYPE=" ("disc" | "square" | "circle"))
+      ("" | " VALUE=" num.natural) # only used in ordered lists
+      ">" stringish-content "</LI>"
+
+   # UL
+   unordered-list 
+      = "<UL" 
+         ("" | " TYPE=" ("disc" | "square" | "circle"))
+         ("" | " COMPACT")
+         ">" list-elem* "</UL>"
+
+   # OL 
+   ordered-list
+      = "<OL" 
+         ("" | " TYPE=" ("1" | "a" | "A" | "i" | "l"))
+         ("" | " START=" num.natural)
+         ("" | " COMPACT")
+         ">" list-elem* "</OL>"
+  
+   # DD
+   definitions = "<DL" ("" | " COMPACT") ">" definition* "</DL>"
+   definition = "<DT>" stringish-content "<DD>" stringish-content
+
+   # DIR (some even older old-school list type)
+   directory
+      = "<DIR" ("" | " COMPACT") ">" list-elem* "</DIR>"
+      | "<MENU" ("" | " COMPACT") ">" list-elem* "</MENU>"
+
+   # PRE
+   preformatted = "<PRE" ("" | " WIDTH=" num.natural) ">" stringish-content "</PRE>"
+   stringish-content = str.string | str.string | content
+
+   # XMP, LISTING (very deprecated pre-like)
+   old-pre 
+      = "<XMP>" stringish-content "</XMP>" 
+      | "<LISTING>" stringish-content "</LISTING>" 
+      | "<PLAINTEXT>" stringish-content # the master tag!
+
+   # DIV
+   division = "<DIV" ("" | " ALIGN=" ("left" | "center" | "right")) ">" content "</DIV>"
+   
+   # CENTER
+   center = "<CENTER>" content "</CENTER>"
+
+   # BLOCKQUOTE
+   blockquote = "<BLOCKQUOTE>" content "</BLOCKQUOTE>"
+
+   # FORM
+   form = "<FORM" 
+      ("" | " ACTION=\"" url "\"")
+      ("" | " METHOD=" ("POST" | "GET"))
+      ("" | " ENCTYPE=\"" mime "\"")
+      ">" form-data "</FORM>"
+
+   form-input = 
+      "<INPUT TYPE=" ("TEXT" | "PASSOWRD" | "CHECKBOX" | "RADIO" | "SUBMIT" | "RESET" | "FILE" | "HIDDEN" | "IMAGE") 
+         " NAME=\"" str.string "\""
+         ("" | " VALUE=\"" (str.string | num.number) "\"")
+         ("" | " CHECKED")
+         ("" | " SIZE=" num.number) # allows also funny numbers
+         ("" | " MAXLENGTH=" (num.natural | num.integer))
+         ("" | " SRC=\"" url "\"")
+         maybe-align
+         ">"
+   
+   form-data = (form-input | stringish-content)*
+
+   table = "<TABLE>" table-row* "</TABLE>"
+
+   table-row = "<TR>" table-column* "</TR>"
+
+   table-column = "<TD>" content "</TD>"
+
+   # some of these are put to the page
+   content = heading | address | paragraph | unordered-list 
+           | ordered-list | definitions | directory | preformatted
+           | old-pre | division | center | form | str.string | table
+
+}

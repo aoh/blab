@@ -1,0 +1,3 @@
+S = 'foo' "bar" '"baz"' "'quux'" '\n'
+    '"rat\"\'s' "'buttock's\'\"\n"
+    '\a\n'

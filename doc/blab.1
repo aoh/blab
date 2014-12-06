@@ -1,0 +1,110 @@
+.TH blab 1 "Dec 3, 2011"
+.SH NAME
+blab \- a grammar-based data generator
+.SH SYNOPSIS
+\fBblab\fR [ -v | -h | -V | -A ] [ -o \fIpattern\fR ] [ -e \fIstr\fR ] [ -n \fInum\fR ] [ -s \fIseed\fR ] [ -f \fIlimit\fR] [ -l \fIdir\fI ] [ \fIgrammar-path\fR ... ]
+.SH DESCRIPTION
+Blab generates data based on a given grammar. It is in effect a 
+reverse parser. It accepts grammars using a simple BNF- and regular 
+expression based syntax and generates outputs which would be 
+parseable according to the grammar. 
+.SH OPTIONS
+This program follows the usual GNU command line syntax, with long
+options starting with two dashes (`-'), and several short options only 
+last oneo of which can have an argument can be merged after a single 
+dash.
+
+A summary of essential command line flats options is included below.
+The complete list is shown on the help page.
+.TP
+\fB\-h, \-\-help\fP Show summary of options and default values if applicable.
+.TP
+\fB\-v, \-\-verbose\fP Increase verbosity (use twice for maximum effect).
+.TP
+\fB\-A, \-\-about\fP Tell something about blab.
+.TP
+\fB\-V, \-\-version\fP Show version of program.
+.TP
+\fB\-o, \-\-output \fIoutput\fR Choose where to write the data. \fIOutput\fR is a path which may contain %n, which will be replaces with the number of the output if present, \fI-\fR to write to standard output, or \fI:<port>\fR to act as a TCP server on the given port.
+.TP
+\fB\-e, \-\-eval \fIgrammar\fR Generate data according to the given argument string. The format of the grammar is defined below.
+.TP
+\fB\-n, \-\-count \fInumber\fR Choose how many outputs to generate from the given grammar.
+.TP
+\fB\-s, \-\-seed \fInumber\fR Seed the random generator with the number. Giving the same seed will result in generating the same outputs in the same order. A random one is used by default.
+.TP
+\fB\-f, \-\-nodes \fInumber\fR Maximum number of tree nodes. Setting this lower will cause maximum output size to be reduced.
+.TP
+\fB\-l, \-\-library \fIpath\fR Search for definitions from the given directory. When encountering an undefined rule being or starting with the string \fIfoo\fR, blab will attempt to load a definition from \fIpath/foo.blab\fR from all given library paths. The default library location is \fI/usr/share/blab\fR.
+.SH GRAMMAR
+Blab reads one grammar at startup from either the string given using -e, the 
+grammar-path given as argument, or standard input if none of the others were 
+given. Further definitions are loaded from the libraries if there are undefined 
+labels in the grammar.
+
+The grammar format tries to merge BNF-style notation, regular expressions and 
+generating both binary and textual data in the least surprising way imaginable, 
+so it might be sufficient have a look at the examples below to learn the structure.
+
+A grammar consists of a sequence of rule definitions, the first of which is the 
+one Blab will use to generate the output. If there is just one rule, the name 
+can be omitted.
+
+There are three kinds of elements in grammars which generate some data, the 
+last two of which are only for convenience.
+.SS byte (42)
+A number in the range 0 < n <= 256 causes that byte to be generated
+.SS rule (slartibartfast)
+A rule name causes something according to that rule to be generated. The rule has to be defined somewhere in the grammar.
+.SS string ("foo")
+A string surrounded by apostrphes causes the same string to be generated, apart from quotations done using \\. The data between the apostrophes has to be valid UTF-8 data. A string is semantically equal to a sequence of the corresponding bytes.
+.SS character class ([a-zα-λXYZ])
+A sequence of ASCII- or UTF-8 -encoded code points separated by square brackets defines a character class any one of which may be generated with equal probability. A sequence of code points can be given by separating the a lower and higher point with a dash. Notice that unlike usually in regular expressions, the sequence means the interval in ASCII (or Unicode) code points \fBnot\fR the sequence defined by Unicode collation algorithm, so for example a-z will generate lower case latin characters and not uppercase characters, greek letters and hundreds of other things the corresponding regular expression would match in a Unicode locale. Also unlike in regular expressions, giving the same character many times has an effect on the probability distribution. [aab] will generate roughly 2/3 a:s and 1/3 b:s.
+
+There are some means of combination to make compound rules of the above.
+
+.SS catenation (42 42 42)
+A sequence of things separated by one or more whitespaces causes something described by those things to be generated in that order.
+.SS union ("foo" | 42 42 | slartibartfast)
+A sequence of thing catenations separated by | means only one of them will be generated at random. Union is weaker than the (implicit) catenation operation.
+.SS quantifiers ("foo"+, 42*, bgeuse{3}, (42 10 | thing){10,100})
+All things can be followed by a quantifier which allows repetition. As in regular expressions, a* means 0 or more a:s, a+ means 1 or more a:s, a{n} causes a to be repeated n times and a{n,m} causes a to be repeated n-m times. All of the repetitions could be built out of *, union and catenation, but the others are also convenient.
+.SS libraries
+It is easy to accidentally redefine a rule, especially when using grammars written by someone else. To avoid this, rules can be defined also in libraries, and referred from inside them using the usual dot notation. A library is defined like a rule, but instead of an equal sign it is followed by rule definitions within curly braces. For example:
+  output = number.int (", " number.int)+ 10
+  number {
+   int = ("+" | "-") [1-9][0-9]*
+  }
+.SH EXAMPLES
+.SS Grammar
+ term = num
+      | func "(" term (", " term){1,4} ")"
+      | "(" term " " op " " term ")"
+ op = [-+*/]
+ num = sign [0-9]+ ("" | "." [0-9]+)
+ sign = "" | ("+" | "-")
+ func = "min" | "max" | "prod" | "sum"
+.SS Command Line
+.P 
+$ blab -e '97 10' # generate bytes 97 and 10, being the letters a and \\n
+.P 
+$ blab -e '97+ 10' # generate 1 or more a, followed by newline
+.P 
+$ blab -e '(97 | 98) 10' # generate a or b and newline
+.P
+$ blab -e '(97 | 98)* 10' # generate 0 or more a:s and b:s
+.P
+$ blab -e 'S = "(" S ")" | "foo" | "bar" | S " " S'  
+.P
+$ blab -e '"-"{80} 10 json 10' -n 1000 # make some json using the 
+included library definitions
+.P
+$ blab -e html -o /tmp/test-%n.html -n 20 -v # make some html and 
+store to numbered files
+.P
+More examples are by default at /usr/share/blab/
+.P 
+.SH SEE ALSO
+.BR ol (1).
+.SH AUTHOR
+Blab and this manual page were written by Aki Helin <aki.helin@iki.fi>.

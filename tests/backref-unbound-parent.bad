@@ -1,0 +1,2 @@
+output = \("foo"\) x  
+x = \1 # must not look from above

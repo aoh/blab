@@ -1,0 +1,14 @@
+
+output = foo.bar.baz
+
+foo = 42
+
+foo {
+   bar {
+      baz {
+         quux = 43
+      }
+   }
+   bar = 43
+}
+

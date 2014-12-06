@@ -1,0 +1,13 @@
+# caused infinite expansion when duplicates were deleted causing confusion for indexing
+
+output = foo 10
+
+foo = "correct"
+foo = "wrong"
+
+int = bar.lol
+
+bar { lol = 42 }
+
+baz { nam = 42 }
+

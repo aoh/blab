@@ -1,0 +1,69 @@
+
+
+unicode {
+   # extension byte 
+
+   byte = 0b________
+
+   utf-8 {
+      maybe-bom = "" | ("" | 239 187 191)
+      ext = 0b10______
+
+      # leading byte possibly with some extension bytes
+      # will create also valid encodings that are disallowed code points
+      utf-8 = 0b0_______
+           |( 0b110_____ ext
+           |( 0b1110____ ext ext
+           |( 0b11110___ ext ext ext
+           |( 0b111110__ ext ext ext ext
+           |( 0b1111110_ ext ext ext ext ext)))))
+
+      text = maybe-bom utf-8+
+   }
+
+   utf-16-be {
+      bom = "" | 254 255
+      text = ("" | bom) (byte byte)+
+   }
+
+   utf-16-le {
+      bom = "" | 255 254
+      text = ("" | bom) (byte byte)+
+   }
+
+   utf-32-be {
+      bom = "" | 0 0 254 255
+      text = ("" | bom) (byte{4})+
+   }
+
+   utf-32-le {
+      bom = "" | 255 254 0 0
+      text = ("" | bom) (byte{4})+
+   }
+
+   utf-7 {
+      bom = "" | 43 47 118 (43 | 47 | 56 | 57)
+      text = ("" | bom) 0b0_______+
+   }
+
+   # FIXME not here yet
+   utf-1 {
+      bom = "" | 247 100 76
+      text = ("" | bom) byte+
+   }
+
+   # FIXME not here yet
+   utf-ebdic {
+      bom = "" | 221 115 102 115
+      text = ("" | bom) byte+
+   }
+
+   text = utf-8.text |
+           ( utf-16-be.text 
+           | utf-16-le.text 
+           | utf-32-be.text 
+           | utf-32-be.text 
+           | utf-7.text 
+           | utf-1.text 
+           | utf-ebdic.text)
+}

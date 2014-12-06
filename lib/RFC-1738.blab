@@ -1,0 +1,143 @@
+## 
+## URL, RFC 1738 (almost verbatim copy)
+## 
+
+url = RFC-1738.url | RFC-2397.dataurl 
+
+RFC-1738 {
+   
+   genericurl = scheme ":" schemepart
+
+   url 
+       = httpurl | ftpurl | newsurl | nntpurl 
+       | telneturl | gopherurl | waisurl | mailtourl 
+       | fileurl | prosperourl | otherurl
+
+   otherurl = genericurl
+
+   # scheme
+
+   rare 
+      = "file" | "ftp" | "http" | "gopher" | "mailto" | "news" 
+      | "nntp" | "telnet" | "wais" | "file" | "prospero" | "https" 
+      | "chrome"
+
+   common = "http" | "https" | "mailto" | "file"
+
+   scheme = common | rare | [a-z0-9+-.]+ 
+
+   schemepart = xchar* | ip-schemepart
+
+   ip-schemepart = "//" login ("" | "/" urlpath)
+
+   login = ("" | user ("" | ":" password) "@") hostport
+
+   hostport = host ("" | ":" port)
+
+   host = hostname | hostnumber 
+
+   hostname = (domainlabel ".")* toplabel
+
+   aldig = [a-z0-9]
+   middig = [a-z0-9-]
+   d = [0-9]
+
+   domainlabel = aldig | aldig middig* aldig 
+
+   toplabel = alpha | alpha middig aldig
+
+   hostnumber = (d{1,3} "."){3}d{1,3}
+
+   port = num.natural
+
+   uspec = ";" | "?" | "&" | "="
+   user = (uchar | uspec)*
+   password = user
+   urlpath = xchar*
+   
+   ftpurl         = "ftp://" login ( "" | "/" fpath ("" | ";type=" ftptype))
+   fpath          = fsegment ("" | "/" fsegment )*
+   fsegment       = ( uchar | ("?" | ":" | "@" | "&" | "=" ))*
+   ftptype        = "A" | "I" | "D" | "a" | "i" | "d"
+
+   # FILE
+
+   fileurl        = "file://" [ host | "localhost" ] "/" fpath
+
+   # HTTP
+
+   httpurl        = "http://" hostport ("" | "/" hpath ("" | "?" search ))
+   hpath          = hsegment ( "/" hsegment )*
+   hsegment       = ( uchar | (";" | ":" | "@" | "&" | "=" ))*
+   search         = ( uchar | (";" | ":" | "@" | "&" | "=" ))*
+
+   # GOPHER (see also RFC1436)
+
+   gopherurl      = "gopher://" hostport ("" | "/" ( "" | gtype ( "" | selector
+                    ("" | "%09" "search" ("" | "%09" gopherstring)))))
+   gtype          = xchar
+   selector       = xchar*
+   gopherstring   = xchar*
+
+   # MAILTO (see also RFC822)
+
+   mailtourl      = "mailto:" encoded822addr
+   encoded822addr = xchar+               # further defined in RFC822
+
+   # NEWS (see also RFC1036)
+
+   newsurl        = "news:" grouppart
+   grouppart      = "*" | group | article
+   group          = alpha ( alpha | digit | "-" | "." | "+" | "_" )*
+   article        = ( uchar | (";" | "/" | "?" | ":" | "&" | "=" ))+ "@" host
+
+   # NNTP (see also RFC977)
+
+   nntpurl        = "nntp://" hostport "/" group ("" | "/" digits )
+
+   # TELNET
+
+   telneturl      = "telnet://" login ("" | "/" )
+
+   # WAIS (see also RFC1625)
+
+   waisurl        = waisdatabase | waisindex | waisdoc
+   waisdatabase   = "wais://" hostport "/" database
+   waisindex      = "wais://" hostport "/" database "?" search
+   waisdoc        = "wais://" hostport "/" database "/" wtype "/" wpath
+   database       = uchar*
+   wtype          = uchar*
+   wpath          = uchar*
+
+   # PROSPERO
+
+   prosperourl    = "prospero://" hostport "/" ppath ( fieldspec )*
+   ppath          = psegment ( "/" psegment )*
+   psegment       = ( uchar | "?" | ":" | "@" | "&" | "=" )*
+   fieldspec      = ";" fieldname "=" fieldvalue
+   fieldname      = ( uchar | ("?" | ":" | "@" | "&" ))*
+   fieldvalue     = ( uchar | ("?" | ":" | "@" | "&" ))*
+
+   # Miscellaneous definitions
+
+   lowalpha       = [a-z]
+   hialpha        = [A-Z]
+
+   alpha          = lowalpha | hialpha
+   digit          = [0-9]
+   safe           = "$" | "-" | "_" | "." | "+"
+   extra          = "!" | "*" | "'" | "(" | ")" | ","
+   national       = "{" | "}" | "|" | "\\" | "^" | "~" | "[" | "]" | "`"
+   punctuation    = "<" | ">" | "#" | "%" | "\""
+
+
+   reserved       = ";" | "/" | "?" | ":" | "@" | "&" | "="
+   hex            = [0-9a-fA-F]
+   escape         = "%" hex hex
+
+   unreserved     = alpha | (digit | (safe | extra))
+   uchar          = unreserved | unreserved | escape
+   xchar          = unreserved | unreserved | (reserved | escape)
+   digits         = digit+
+
+}

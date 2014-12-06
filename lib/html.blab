@@ -1,0 +1,314 @@
+html = html.page
+
+html {
+
+   source = dataurl | url | uri
+
+   class = "foo" | "bar" | "baz" | "quux" | "slartibarfast"
+
+   html5 {
+
+      language = "en-GB" # fixme
+
+      accesskeys = "N @ 1" # fixme
+      
+      classes = class (" " class)*
+     
+      direction = "ltr" | "rtl" | "auto"
+
+      bool = "true" | "false" 
+
+      dropzone 
+         = "copy" | "move" | "link" 
+         | "s:" class | "f:" mime
+
+      # html5 spec 3.2.3 global attributes
+      # these can be attached to any elements
+      html5-global-attr 
+         = " acceskey=\"" accesskeys "\""
+         | " class=\"" classes "\""
+         | " contenteditable=\"" bool "\""
+         | " dir=\"" direction "\""
+         | " draggable=\"" bool "\""
+         | " dropzone=\"" dropzone (" " dropzone)* "\""
+         | " hidden=\"" bool "\""
+         | " id=\"" class "\""
+         | " lang=\"" language "\""
+         | " spellcheck=\"" bool "\""
+         | " tabindex=\"" num.integer "\""
+         | " title=\"" html-stringish "\""
+         | data-attr # added here to make suitably (in)frequent
+         # | " style=\"" "\"" # <- handled separately
+
+      # non-html5 relics 
+      old-global-attr 
+         = " width=\"" num.number "\""
+         | " height=\"" num.number "\""
+         | " align=" ("center" | "middle" | "top" | "bottom")
+    
+      data-attr = " data-" ("a"+ ("-" "a"+)*) "=\"" (str.string | num.number) "\""
+
+      # possibly some attributes and local styling
+      attrs = ("" | html5-global-attr | old-global-attr)*
+              ("" | "" | "" | " style=\"" css.exps "\"")
+     
+      target = "_blank" | "_self" | "_parent" | "_top"
+      
+      rel = "alternate" | "archives" | "author" | "bookmark" | "external" | "first" | "help" | "icon" | "index" | "last" | "license" | "next" | "nofollow" | "noreferrer" | "pingback" | "prefetch" | "prev" | "search" | "stylesheet" | "sidebar" | "tag" | "up"
+
+      media-query = "all" # fixme - missing
+
+      date-str 
+         = num.natural "-" num.natural "-" num.natural 
+            ("" | "T" num.natural ":" num.natural "-" num.natural ":" num.natural)
+         | num.natural (("-" | "-" | ":" | "T") num.natural)*
+
+      html5-tag = 10 tag
+
+      tag # all basic html attrs
+         = "<a" attrs 
+               ("" | " href=\"" uri "\"")
+               ("" | " target=\"" target "\"")
+               ("" | " rel=\"" rel (" " rel)* "\"")
+               ("" | " media=\"" media-query "\"")
+               ("" | " hreflang=\"" language "\"")
+               ("" | "" | " type=\"" mime "\"")
+            ">" html-stringish "</a>" 
+         | "<em" attrs ">" html-stringish "</em>"
+         | "<strong" attrs ">" html-stringish "</strong>"
+         | "<small" attrs ">" html-stringish "</small>"
+         | "<s" attrs ">" html-stringish "</s>"
+         | "<cite" attrs ">" html-stringish "</cite>"
+         | "<q" attrs ("" | " cite=\"" uri "\"") ">" 
+            html-stringish "</q>"
+         | "<dfn" attrs ">" html-stringish "</dfn>"
+         | "<abbr" attrs ">" html-stringish "</abbr>"
+         | "<time" attrs 
+            ("" | " datetime=\"" date-str "\"" 
+                  " pubdate=" bool)
+            ">" html-stringish "</time>"
+         | "<code" attrs ">" html-stringish "</code>"
+         | "<var" attrs ">" html-stringish "</var>"
+         | "<samp" attrs ">" html-stringish "</samp>"
+         | "<kbd" attrs ">" html-stringish "</kbd>"
+         | "<sub" attrs ">" html-stringish "</sub>"
+         | "<sup" attrs ">" html-stringish "</sup>"
+         | "<i" attrs ">" html-stringish "</i>"
+         | "<b" attrs ">" html-stringish "</b>"
+         | "<mark" attrs ">" html-stringish "</mark>"
+         | "<ruby" attrs ">" html-stringish "</ruby>"
+         | "<rt" attrs ">" html-stringish "</rt>"
+         | "<rp" attrs ">" html-stringish "</rp>"
+         | "<bdi" attrs ("" | " dir=" ("ltr" | "rtl")) ">" html-stringish "</bdi>"
+         | "<bdo" attrs ("" | " dir=" ("ltr" | "rtl")) ">" html-stringish "</bdo>"
+         | "<span" attrs ">" html-stringish "</span>"
+         | "<summary" attrs ">" html-stringish "</summary>"
+         | "<br>" html5
+         | "<wbr" attrs ">" html-stringish "</wbr>"
+         | "<ins" attrs 
+            ("" | " cite=\"" uri "\"") ">" 
+            ("" | " datetime=\"" date-str "\"") ">" 
+            html5 "</ins>"
+         | "<del" attrs 
+            ("" | " cite=\"" uri "\"") ">" 
+            ("" | " datetime=\"" date-str "\"") ">" 
+            html5 "</del>"
+         | "<img" attrs 
+            ("" | " alt=\"" (str.string | html-stringish)"\"")
+            " src=\"" source "\""
+            ("" | " width=\"" num.natural "\"")
+            ("" | " height=\"" num.natural "\"")
+            ("" | " ismap=\"" bool "\"")
+            ("" | " usemap=\"foomap\"")  # always use this as shape name 
+            ">" ("" | html-stringish)
+         | "<iframe" attrs 
+            " src=\"" source "\""
+            ("" | " srcdoc=\"" html-stringish "\"")
+            ("" | " seamless=\"" bool "\"")
+            ("" | " width=\"" num.natural "\"")
+            ("" | " height=\"" num.natural "\"")
+            ">" ("" | html-stringish) "</iframe>"
+         | "<embed" attrs 
+            " src=\"" source "\""
+            ("" | " width=\"" num.natural "\"")
+            ("" | " type=\"" mime "\"")
+            ("" | " height=\"" num.natural "\"")
+            ">" ("" | html-stringish) "</iframe>"
+         # below are not yet expanded
+         | "<adderss" attrs ">" html5 "</address>"
+         | "<area" attrs ">" html5 "</area>"
+         | "<article" attrs ">" html5 "</article>"
+         | "<aside" attrs ">" html5 "</aside>"
+         | "<audio" attrs ">" html5 "</audio>"
+         | "<b" attrs ">" html5 "</b>"
+         | "<base" attrs ">" html5 "</base>"
+         | "<blockquote" attrs ">" html5 "</blockquote>"
+         | "<button" attrs ">" html5 "</button>"
+         | "<canvas" attrs ">" html5 "</canvas>"
+         | "<caption" attrs ">" html5 "</caption>"
+         | "<ci" attrs ">" html5 "</b>"
+         | "<col" attrs ">" html5 "</col>"
+         | "<colgroup" attrs ">" html5 "</colgroup>"
+         | "<command" attrs ">" html5 "</command>"
+         | "<datalist" attrs ">" html5 "</datalist>"
+         | "<dd" attrs ">" html5 "</dd>"
+         | "<details" attrs ">" html5 "</details>"
+         | "<div" attrs ">" html5 "</div>"
+         | "<dl" attrs ">" html5 "</dl>"
+         | "<dt" attrs ">" html5 "</dt>"
+         | "<fieldset" attrs ">" html5 "</fieldset>"
+         | "<figcaption" attrs ">" html5 "</figcaption>"
+         | "<figure" attrs ">" html5 "</figure>"
+         | "<footer" attrs ">" html5 "</footer>"
+         | "<form" attrs ">" html5 "</form>"
+         | "<header" attrs ">" html5 "</header>"
+         | "<hgroup" attrs ">" html5 "</hgroup>"
+         | "<hr" attrs ">" html5 "</hr>"
+         | "<input" attrs ">" html5 "</input>"
+         | "<keygen" attrs ">" html5 "</keygen>"
+         | "<label" attrs ">" html5 "</label>"
+         | "<legend" attrs ">" html5 "</legend>"
+         | "<li" attrs ">" html5 "</li>"
+         | "<link" attrs ">" html5 "</link>"
+         | "<map" attrs ">" html5 "</map>"
+         | "<meter" attrs
+            ("" | " value="num.number)
+            ("" | " min="num.number)
+            ("" | " low="num.number)
+            ("" | " high="num.number)
+            ("" | " max="num.number)
+            ("" | " optimum="num.number)
+            ">" html5 "</meter>"
+         | "<nav" attrs ">" html5 "</nav>"
+         | "<noscript" attrs ">" html5 "</noscript>"
+         | "<object" attrs 
+            ("" | " data=" (str.string | num.number | source))
+            ("" | " type=" mime)
+            ("" | " name=" str.string)
+            ("" | " form=" str.string)
+            ("" | " width=" num.integer)
+            ("" | " height=" num.integer)
+            ">" html5 "</object>"
+         | "<ol" attrs ">" html5 "</ol>"
+         | "<optgroup" attrs ">" html5 "</optgroup>"
+         | "<option" attrs ">" html5 "</option>"
+         | "<output" attrs ">" html5 "</output>"
+         | "<param" attrs
+            ("" | " name=\"" str.string "\"")
+            ("" | " value=\"" (str.string | num.number)"\"")
+            ">" html5 "</param>"
+         | "<pre" attrs ">" html5 "</pre>"
+         | "<progress" attrs 
+            ("" | " value=" num.number)
+            ("" | " max=" num.number)
+            ">" html5 "</progress>"
+         | "<q" attrs ">" html5 "</q>"
+         | "<rp" attrs ">" html5 "</rp>"
+         | "<rt" attrs ">" html5 "</rt>"
+         | "<s" attrs ">" html5 "</s>"
+         | "<p" attrs ">" html5 "</p>"
+         | "<samp" attrs ">" html5 "</samp>"
+         | "<section" attrs ">" html5 "</section>"
+         | "<select" attrs ">" html5 "</select>"
+         | "<style" attrs ">" css.exps "</style>"
+         | "<textarea" 
+            ("" | "autofocus")
+            ("" | "cols=" num.number)
+            ("" | "disabled")
+            ("" | "dirname=\""" class \"")
+            ("" | "form=\"" class "\"")
+            ("" | "maxlength=" num.number)
+            ("" | "name=" class)
+            ("" | "placeholder=\"" str.string "\"")
+            ("" | "readonly")
+            ("" | "required")
+            ("" | "rows=" num.number)
+            ("" | "wrap=" ("sort" | "hard"))
+            attrs ">" html5 "</textarea>"
+         | "<track" attrs ">" html5 "</track>"
+         | "<tfoot" attrs ">" html5 "</tfoot>"
+         | "<video" attrs 
+            ("" | " src=" source)
+            ("" | " controls=" bool)
+            ("" | " loop=" bool)
+            ("" | " autoplay=" bool)
+            ("" | " width=" num.natural)
+            ("" | " height=" num.natural)
+            ("" | " autobuffer=" bool)
+            ("" | " poster=" bool)
+            ">" html5 "</video>"
+         | "<xmp" attrs ">" html5 "</xmp>" # deprecated
+    
+      # <p> may have some global formatting, so prefer to have paragraphs 
+      html-stringish = str.string | "<p>" str.string | html5
+
+      html5 = html5-tag | html-special | html-stringish | html5 html5
+
+      # fixme: no other special stuff yet
+      html-special = ("&#" num.dec num.dec num.dec num.dec ";")+
+                   | "&nbsp;"
+                   | "a"+
+                   | "<!-- " str.string " -->"
+
+      # fixme - missing xmlns:foo="http://www.w3.org/1999/02/22-rdf-syntx and <foo:name> ...
+
+      utf8 = "UTF-8"
+
+      funny-charset = "UTF-16" | "UTF-16LE" | "UTF-16BE" | "UTF-7" | "UTF-32" | "ASCII" | "latin1"
+
+      page-charset = utf8 | (utf8 | (utf8 | funny-charset))
+
+      # tag to be used for global css
+      toplevel-css-tag 
+         = ("p" | "div" | "body" | "a" | "" | "video" | "@page") maybe-pseudo-elems
+
+      toplevel-css-target 
+         = toplevel-css-tag 
+           ("" | ("" | ("," toplevel-css-target)*))
+
+
+      # fixme: extend to <tagname>[pseudoclass][,<tagname>[peudoclass]]* { ... }
+      maybe-pseudo-elems 
+         = "" | 
+             ("" | 
+               ":" 
+               ("visited" | "hover" | "first-letter" | "first-line" | "before" | "after" | "first-child" | "active" | "focus" | "lang" | "link" | "visited" | "root" | "-webkit-full-screen" | "-webkit-full-page-media" | "-webkit-media-controls-panel") 
+               maybe-pseudo-elems)
+
+      page = "<!DOCTYPE HTML>" 
+             10 "<html lang=\"" language "\">"
+             10 "<head>"
+             10 ("" | "<link rel=\"shortcut icon\" href=\"" (source | dataurl) "\">")
+             10 "<script>"
+             10 js.main
+             10 "</script>"
+             10 "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=" page-charset "\">"
+             10 "<style>"
+            (10 toplevel-css-target "{" css.exps "}")*
+             10 "</style>"
+             10 "</head>"
+             10 "<body id=spawnery onload=\"main()\" style=\"" css.exps (";" css.exps)* "\">"
+             html5{1,20}
+             10 "</body>"
+             10 "</html>"
+
+      static-page # like page, but no js
+              = "<!DOCTYPE HTML>" 
+             10 "<html lang=\"" language "\">"
+             10 "<head>"
+             10 ("" | "<link rel=\"shortcut icon\" href=\"" (source | dataurl) "\">")
+             10 "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=" page-charset "\">"
+             10 "<style>"
+            (10 toplevel-css-target "{" css.exps "}")*
+             10 "</style>"
+             10 "</head>"
+             10 "<body style=\"" css.exps (";" css.exps)* "\">"
+             html5{1,20}
+             10 "</body>"
+             10 "</html>"
+   }
+
+   # prefer scriptless pages
+   page = html5.static-page | html5.static-page | (html5.page | html32.page | htmlish.page)
+
+}
