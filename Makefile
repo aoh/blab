@@ -70,7 +70,7 @@ uninstall:
 get-owl:
 	# need to install owl to be able to compile radamsa
 	# this may take a moment depending on your machine
-	-git clone http://haltp.org/git/owl-lisp.git
+	-git clone https://github.com/aoh/owl-lisp.git
 	-cd owl-lisp && git pull 
 	cd owl-lisp && make
 
