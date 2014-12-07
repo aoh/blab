@@ -1428,42 +1428,49 @@ More information is available at http://code.google.com/p/ouspg/wiki/Blab.
    (append rands 
       (λ () (loop rands))))
 
-;; loop a fixed sequence of rands indefinitely
-(define (very-bad-rs rs)
-   (lets
-      ((rs bits (rand-range rs 2 8))
-       (rs n-rands (rand-range rs 1 (<< 1 bits)))
-       (rands (ltake rs n-rands)))
-      (values rs 
-         (loop rands))))
+(define (step d s)
+   (pair d (lets ((d _ (fx+ d s))) (step d s))))
 
-;; todo: add an occasionally bad rs
-(define (badden-rs rs)
+(define (weak-rs rs)
    (lets 
-      ((rs n (rand rs 4)))
+      ((d rs (uncons rs #false))
+       (d (fxband d 1)))
       (cond
-         ((eq? n 0)
-            (very-bad-rs rs))
-         (else
-            (lets 
-               ((rs seed (rand rs #xffffffffffffffffffffffff))
-                (this-rs (seed->rands seed)))
-               (values rs (seed->rands seed)))))))
+         ((eq? d 1) ;; fixed loop
+            (lets
+               ((rs bits (rand-range rs 2 8))
+                (rs n-rands (rand-range rs 1 (<< 1 bits)))
+                (rands (ltake rs n-rands)))
+               (values rs (loop rands))))
+         (else ;; fixed step
+            (lets
+               ((d rs (uncons rs #false))
+                (s rs (uncons rs #false)))
+               (values rs (step d s)))))))
 
 (define (data-generator n-files gram nodes write seed)
-   (lfold
-      (λ (rs n)
-         (lets
-            ((rs nodes (rand rs (* nodes 2))) ;; add variance to sizes
-             (writer (write seed n))
-             (rs this-rs (badden-rs rs))
-             (this-rs writer fuel env up (expand this-rs writer nodes gram 0 empty-env #empty)))
-            (writer 'close)
-            rs))
-      (seed->rands seed)
-      (if (eq? n-files 'inf)
-         (lnums 1)
-         (liota 1 1 (+ n-files 1)))))
+   (let 
+      ((end (if (number? n-files) (+ n-files 1) -1))
+       (rs (seed->rands seed)))
+      (let loop ((rs rs) (n 1))
+         (if (= n end)
+            rs
+            (lets
+               ((rs nodes (rand rs (* nodes 2))) ;; add variance to sizes
+                (writer (write seed n))
+                (d rs (uncons rs #false)))
+               (if (eq? 0 (fxband d 3))
+                  (lets
+                     ((rs bad-rs (weak-rs rs))
+                      (bad-rs writer fuel env up 
+                        (expand bad-rs writer nodes gram 0 empty-env #empty)))
+                     (writer 'close)
+                     (loop rs (+ n 1)))
+                  (lets
+                     ((rs writer fuel env up 
+                        (expand rs writer nodes gram 0 empty-env #empty)))
+                     (writer 'close)
+                     (loop rs (+ n 1)))))))))
 
 ;; try to read some byte from /dev/urandom, otherwise use current milliseconds
 (define (random-random-seed)
