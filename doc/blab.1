@@ -36,6 +36,9 @@ The complete list is shown on the help page.
 \fB\-f, \-\-nodes \fInumber\fR Maximum number of tree nodes. Setting this lower will cause maximum output size to be reduced.
 .TP
 \fB\-l, \-\-library \fIpath\fR Search for definitions from the given directory. When encountering an undefined rule being or starting with the string \fIfoo\fR, blab will attempt to load a definition from \fIpath/foo.blab\fR from all given library paths. The default library location is \fI/usr/share/blab\fR.
+.TP
+\fB\-r, \-\-random\-generators \fIweights\fR random generators to use as <name>[=<weight>], where name is one of rand, loop and step.
+
 .SH GRAMMAR
 Blab reads one grammar at startup from either the string given using -e, the 
 grammar-path given as argument, or standard input if none of the others were 

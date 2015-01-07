@@ -68,7 +68,7 @@ uninstall:
 	rm $(DESTDIR)$(PREFIX)/share/man/man1/blab.1.gz
 
 get-owl:
-	# need to install owl to be able to compile radamsa
+	# need to install owl to be able to compile blab
 	# this may take a moment depending on your machine
 	-git clone https://github.com/aoh/owl-lisp.git
 	-cd owl-lisp && git pull 

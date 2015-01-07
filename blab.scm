@@ -1182,7 +1182,117 @@
       (if (mem equal? '("inf" "infinite" "forever") x)
          'inf
          #false)))
+
+(define (loop rands)
+   (append rands 
+      (λ () (loop rands))))
+
+;; loop a fixed sequence, do not use this later!
+(define (rs-editor-loop rs)
+   (lets
+      ((rs bits (rand-range rs 2 8))
+       (rs n-rands (rand-range rs 1 (<< 1 bits)))
+       (rands (ltake rs n-rands)))
+      (values rs (loop rands) #false)))
+
+(define (step d s)
+   (pair d (lets ((d _ (fx+ d s))) (step d s))))
+
+(define (rs-editor-step rs)
+   (lets
+      ((d rs (uncons rs #false))
+       (s rs (uncons rs #false)))
+      (values rs (step d s) #false)))
+
+;; use the default (sensible) random stream as such + reuse it after geenration
+(define (rs-editor-passthrough rs)
+   (values rs rs #true))
+
+;; x (... x ... x ...) → ((...) (...) (...))
+(define (cut-at val lst)
+   (let loop ((lst lst) (this null) (done null))
+      (cond
+         ((null? lst)
+            (if (null? this)
+               (reverse done)
+               (loop (list val) this done)))
+         ((eq? (car lst) val)
+            (loop (cdr lst) null
+               (cons (reverse this) done)))
+         (else
+            (loop (cdr lst) (cons (car lst) this) done)))))
+
+(define (bytes->num bs)
+   (fold
+      (λ (n x)
+         (let ((x (- x #\0)))
+            (if (and n (< -1 x) (< x 10))
+               (+ x (* n 10))
+               #false)))
+      0 bs))
+
+(define rs-editors
+   (map 
+      (λ (x) (cons (string->list (car x)) (cdr x)))
+      (list
+         (cons "rand" rs-editor-passthrough)
+         (cons "step" rs-editor-step)
+         (cons "loop" rs-editor-loop))))
+
+(define (name->random-stream-editor bs)
+   (let ((node (assoc bs rs-editors)))
+      (if node (cdr node) node)))
+
+(define (random-generator-node lst)
+   (let ((l (length lst)))
+      (cond
+         ((= l 1)
+            (let ((sed (name->random-stream-editor (car lst))))
+               (if sed
+                  (cons sed 1) ;; 1 as implicit weight
+                  (begin
+                     (print*-to stderr (list "unknown random generator: " (list->string (car lst))))
+                     #false))))
+         ((= l 2)
+            (lets
+               ((sed (name->random-stream-editor (car lst)))
+                (pri (bytes->num (cadr lst))))
+               (cond
+                  ((not sed) 
+                     (print*-to stderr (list "unknown random generator: " (list->string (car lst)))))
+                  ((not pri) 
+                     (print*-to stderr (list "bad random generator priority: " (list->string (cadr lst)))))
+                  (else
+                     (cons sed pri)))))
+         (else
+            (print*-to stderr (list "zero or one priorities please"))
+            #false))))
+
+(define (pick-generator gens pos)
+   (let ((pos (- pos (cdar gens))))
+      (if (< pos 0)
+         (caar gens)
+         (pick-generator (cdr gens) pos))))
       
+(define (string->random-random-generator-generator str)
+   (lets
+      ((bytes (string->list str))
+       (fields (cut-at #\, bytes))
+       (fields (map (λ (x) (cut-at #\= x)) fields))
+       (pairs 
+         (map random-generator-node fields)))
+      (if (all (λ (x) x) pairs)
+         (lets
+            ((total (fold + 0 (map cdr pairs))))
+            (λ (rs)
+               (lets 
+                  ((rs x (rand rs total))
+                   (red (pick-generator pairs x)))
+                  (red rs))))
+         (begin
+            (print-to stderr "request for random generators denied")
+            #false))))
+
 (define command-line-rule-exp
  `((output "-o" "--output" has-arg default ,default-output
       comment "path or pattern where to write the data.")
@@ -1199,6 +1309,10 @@
 		comment "path to load libraries from if necessary")
    (meta "-M" "--meta" has-arg 
       comment "save metadata about generated files to this file")
+   (rand "-r" "--random-generators"
+      cook ,string->random-random-generator-generator
+      default "rand=10,loop=2,step"
+      comment "random generators and their weights to use")
    (parse "-p" "--parse" has-arg 
       comment "try to parse according grammar file given as argument")
    (help "-h" "--help")
@@ -1424,31 +1538,7 @@ More information is available at http://code.google.com/p/ouspg/wiki/Blab.
          (output "The output pattern must have a %n to avoid overwriting the file when generating more than one of them.")
          (exit-thread 1))))
 
-(define (loop rands)
-   (append rands 
-      (λ () (loop rands))))
-
-(define (step d s)
-   (pair d (lets ((d _ (fx+ d s))) (step d s))))
-
-(define (weak-rs rs)
-   (lets 
-      ((d rs (uncons rs #false))
-       (d (fxband d 1)))
-      (cond
-         ((eq? d 1) ;; fixed loop
-            (lets
-               ((rs bits (rand-range rs 2 8))
-                (rs n-rands (rand-range rs 1 (<< 1 bits)))
-                (rands (ltake rs n-rands)))
-               (values rs (loop rands))))
-         (else ;; fixed step
-            (lets
-               ((d rs (uncons rs #false))
-                (s rs (uncons rs #false)))
-               (values rs (step d s)))))))
-
-(define (data-generator n-files gram nodes write seed)
+(define (data-generator n-files gram nodes write seed rs-editor)
    (let 
       ((end (if (number? n-files) (+ n-files 1) -1))
        (rs (seed->rands seed)))
@@ -1458,19 +1548,11 @@ More information is available at http://code.google.com/p/ouspg/wiki/Blab.
             (lets
                ((rs nodes (rand rs (* nodes 2))) ;; add variance to sizes
                 (writer (write seed n))
-                (d rs (uncons rs #false)))
-               (if (eq? 0 (fxband d 3))
-                  (lets
-                     ((rs bad-rs (weak-rs rs))
-                      (bad-rs writer fuel env up 
-                        (expand bad-rs writer nodes gram 0 empty-env #empty)))
-                     (writer 'close)
-                     (loop rs (+ n 1)))
-                  (lets
-                     ((rs writer fuel env up 
-                        (expand rs writer nodes gram 0 empty-env #empty)))
-                     (writer 'close)
-                     (loop rs (+ n 1)))))))))
+                (rs case-rs keep? (rs-editor rs)) ;; per-case random stream, and whether to use it afterwards
+                (case-rs writer fuel env up 
+                   (expand case-rs writer nodes gram 0 empty-env #empty)))
+               (writer 'close)
+               (loop (if keep? case-rs rs) (+ n 1)))))))
 
 ;; try to read some byte from /dev/urandom, otherwise use current milliseconds
 (define (random-random-seed)
@@ -1509,7 +1591,7 @@ More information is available at http://code.google.com/p/ouspg/wiki/Blab.
             (make-writer (get dict 'output default-output) (eq? n-files 1)))) ; as if given -o -
          (maybe-write-meta dict seed args) 
          ;; todo: add a see-grammar for --verbose
-         (data-generator (get dict 'count 1) all (get dict 'nodes default-nodes) write seed)
+         (data-generator (get dict 'count 1) all (get dict 'nodes default-nodes) write seed (getf dict 'rand))
          0)
       1))
 
