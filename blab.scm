@@ -1389,7 +1389,7 @@ More information is available at http://code.google.com/p/ouspg/wiki/Blab.
       (λ (path tl)
          (if tl
             (begin
-               (output "Reading data grammar data from " (name-of path) ".")
+               (output "Reading grammar from " (name-of path) ".")
                (let ((data (record-time " - reading " path (read-data path))))
                   (if data
                      (let ((gram (vector->exec data (name-of path) libs)))
