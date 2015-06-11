@@ -21,8 +21,9 @@ str {
       | "\\n" | "\\b"                              # unexpected plain quoting?
       | "%55%72%72"                                # null via double url decoding?
       | "ATD*99#" | "ATZ" | "ATH" | "ATKTHXBY3"
+      
 
-   string = super.hero | "a"+ | "a"* | (silly ("" | " "))+ | unicode.text
+   string = super.hero | "a"+ | "a"* | (silly ("" | " "))+ | unicode.text | rfc-2047
 
    null-terminated-string = string 0
 
@@ -35,6 +36,9 @@ str {
       text = sentence (" " sentence){1,10}
    }
 
+   rfc-2047 = 
+    "=?" [a-z]{0,5} "?" ("q" | "r" | [a-z]{1,2}) "?" [a-z=_0-9]* "?="
+      
    lambda {
       var = "a" | "b" | "c" | "d" | "e" | "f"
       abs = "λ" var+ "." (app | var | var)
