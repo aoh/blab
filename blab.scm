@@ -1192,7 +1192,7 @@
    (lets
       ((rs bits (rand-range rs 2 8))
        (rs n-rands (rand-range rs 1 (<< 1 bits)))
-       (rands (ltake rs n-rands)))
+       (rands (force-ll (ltake rs n-rands))))
       (values rs (loop rands) #false)))
 
 (define (step d s)
