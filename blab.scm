@@ -1501,7 +1501,7 @@ More information is available at http://code.google.com/p/ouspg/wiki/Blab.
                      (bytes->string
                         (render pos target-str)))
                   (begin   
-                     (interact sleeper-id 2) ;; sleep for a while while target is unreachable
+                     (sleep 100)
                      (loop))))))))
    
 
