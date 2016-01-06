@@ -2,7 +2,7 @@
 ## $ make && sudo make install -> install to /usr/bin/blab, and samples to /usr/share/blab
 ##
 
-DESTDIR=
+DESTDIR?=
 PREFIX?=/usr
 CFLAGS?=-Wall -O3
 OFLAGS?=-O1
