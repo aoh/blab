@@ -5,7 +5,6 @@
 DESTDIR=
 PREFIX=/usr
 CFLAGS=-Wall -O3
-CC=gcc
 OFLAGS=-O1
 W32GCC=i586-mingw32msvc-gcc # sudo apt-get install mingw32 @ debian squeeze
 INSTALL=install
