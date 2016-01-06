@@ -3,23 +3,17 @@
 ##
 
 DESTDIR=
-PREFIX=/usr
-CFLAGS=-Wall -O3
-CC=gcc
-OFLAGS=-O1
-W32GCC=i586-mingw32msvc-gcc # sudo apt-get install mingw32 @ debian squeeze
-INSTALL=install
-OL=owl-lisp/bin/ol
+PREFIX?=/usr
+CFLAGS?=-Wall -O3
+OFLAGS?=-O1
+INSTALL?=install
+OL?=owl-lisp/bin/ol
 
 everything: bin/blab seal-of-quality doc/blab.1.gz
 
 bin/blab: blab.c
 	mkdir -p bin
 	$(CC) $(CFLAGS) -o bin/blab blab.c
-
-bin/blab.exe: blab.c
-	which $(W32GCC)
-	$(W32GCC) $(CFLAGS) -o bin/blab.exe blab.c -lwsock32
 
 blab.c: blab.scm
 	make get-owl
@@ -68,11 +62,10 @@ uninstall:
 	rm $(DESTDIR)$(PREFIX)/share/man/man1/blab.1.gz
 
 get-owl:
-	# need to install owl to be able to compile blab
-	# this may take a moment depending on your machine
+	# need to compile owl locally to be able to compile blab
 	-git clone https://github.com/aoh/owl-lisp.git
 	-cd owl-lisp && git pull 
-	cd owl-lisp && make
+	cd owl-lisp && make simple-ol
 
 .PHONY: install clean test everything uninstall testi get-owl
 
