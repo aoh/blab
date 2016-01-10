@@ -10,12 +10,11 @@ INSTALL?=install
 OWLVERSION=0.1.10
 OL?=owl-lisp-$(OWLVERSION)/bin/vm owl-lisp-$(OWLVERSION)/fasl/init.fasl
 
-
-everything: bin/blab seal-of-quality doc/blab.1.gz
-
 bin/blab: blab.c
 	mkdir -p bin
 	$(CC) $(CFLAGS) -o bin/blab blab.c
+
+everything: bin/blab seal-of-quality doc/blab.1.gz
 
 blab.c: blab.scm
 	make get-owl
@@ -33,7 +32,7 @@ blab.fasl.ok: blab.fasl
 bytecode:
 	$(OL) -O0 -x c -o - blab.scm | $(CC) -O -x c -o bin/blab -
 
-install: bin/blab doc/blab.1.gz seal-of-quality
+install: bin/blab doc/blab.1.gz
 	$(INSTALL) -d -m 755 $(DESTDIR)$(PREFIX)/bin
 	$(INSTALL) -d -m 755 $(DESTDIR)$(PREFIX)/share/blab
 	$(INSTALL) -d -m 755 $(DESTDIR)$(PREFIX)/share/man/man1
@@ -44,6 +43,7 @@ install: bin/blab doc/blab.1.gz seal-of-quality
 seal-of-quality: bin/blab
 	cd tests && ./run.sh ../bin/blab
 	touch seal-of-quality
+
 
 doc/blab.1.gz: doc/blab.1
 	cat doc/blab.1 | gzip -9 > doc/blab.1.gz
