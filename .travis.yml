@@ -1,7 +1,19 @@
-language: C
+language: c
+
+before_install: 
+  - echo "HELLO LOG"
+  - uname | grep Linux && sudo apt-get install -y netcat-traditional
+
+os: 
+  - linux
+  - osx
 
 compiler:
- - clang
- - gcc
+  - clang
+  - gcc
+
+env:
+  - CFLAGS="-O2"
+  - CFLAGS="-O2 -m32"
 
 script: make

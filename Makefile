@@ -7,7 +7,9 @@ PREFIX?=/usr
 CFLAGS?=-Wall -O3
 OFLAGS?=-O1
 INSTALL?=install
-OL?=owl-lisp/bin/ol
+OWLVERSION=0.1.10
+OL?=owl-lisp-$(OWLVERSION)/bin/vm owl-lisp-$(OWLVERSION)/fasl/init.fasl
+
 
 everything: bin/blab seal-of-quality doc/blab.1.gz
 
@@ -62,10 +64,9 @@ uninstall:
 	rm $(DESTDIR)$(PREFIX)/share/man/man1/blab.1.gz
 
 get-owl:
-	# need to compile owl locally to be able to compile blab
-	-git clone https://github.com/aoh/owl-lisp.git
-	-cd owl-lisp && git pull 
-	cd owl-lisp && make simple-ol
+	# fetching and building owl to build radamsa
+	test -d owl-lisp-$(OWLVERSION) || curl -L https://github.com/aoh/owl-lisp/archive/v$(OWLVERSION).tar.gz | tar -zxvf -
+	cd owl-lisp-$(OWLVERSION) && make bin/vm
 
 .PHONY: install clean test everything uninstall testi get-owl
 
