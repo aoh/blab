@@ -4,6 +4,9 @@ Blab is a tool for producing data according to slightly extended context
 free grammars. You can think of it as a reverse grep, but with a more
 descriptive language.
 
+
+
+```
 $ blab -e '97 10'
 a
 $ blab -e '(97 | 98)* 10'
@@ -42,6 +45,7 @@ $ blab -e 'battle = hero " vs " hero " at " place "\n"
            verb = "shrink" | "topple" | "ditch" | "find" | "grow"
            noun = "wood" | "lake" | "mountain"'
 überboy vs radarman at shrinkwoods
+```
 
 ## Building
 
