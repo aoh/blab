@@ -297,7 +297,7 @@
       (let-parses ((skip (get-imm 114))) 13)   ; \r = 13
       (let-parses ((skip (get-imm 116)))  9)   ; \t =  9
       (let-parses ((skip (get-imm  #\"))) #\")   ; \" =  "
-      (let-parses ((skip (get-imm  #\'))) #\')   ; \" =  "
+      (let-parses ((skip (get-imm  #\'))) #\')   ; \' =  '
       ))
 
 ;; todo: no special quotations yet (\n, \t, \012, \xff...)

@@ -60,7 +60,9 @@ A number in the range 0 < n <= 256 causes that byte to be generated
 .SS rule (slartibartfast)
 A rule name causes something according to that rule to be generated. The rule has to be defined somewhere in the grammar.
 .SS string ("foo")
-A string surrounded by apostrphes causes the same string to be generated, apart from quotations done using \\. The data between the apostrophes has to be valid UTF-8 data. A string is semantically equal to a sequence of the corresponding bytes.
+A string surrounded by apostrphes causes the same string to be generated, apart from escape sequences using \\. The data between the apostrophes has to be valid UTF-8 data. A string is semantically equal to a sequence of the corresponding bytes.
+
+The supported escape sequences are \\\\ for a literal backslash, \\", \\', \\n, \\r, \\t, \\xXX (two hex digits) for an octet and \\uXXXX (four hex digits) for a Unicode code point.
 .SS character class ([a-zα-λXYZ])
 A sequence of ASCII- or UTF-8 -encoded code points separated by square brackets defines a character class any one of which may be generated with equal probability. A sequence of code points can be given by separating the a lower and higher point with a dash. Notice that unlike usually in regular expressions, the sequence means the interval in ASCII (or Unicode) code points \fBnot\fR the sequence defined by Unicode collation algorithm, so for example a-z will generate lower case latin characters and not uppercase characters, greek letters and hundreds of other things the corresponding regular expression would match in a Unicode locale. Also unlike in regular expressions, giving the same character many times has an effect on the probability distribution. [aab] will generate roughly 2/3 a:s and 1/3 b:s.
 
