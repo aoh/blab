@@ -8,7 +8,7 @@ CFLAGS?=-Wall -O3
 OFLAGS?=-O1
 INSTALL?=install
 OWLVERSION=0.1.10
-OL?=owl-$(OWLVERSION)/bin/vm owl-$(OWLVERSION)/fasl/init.fasl
+OL?=owl-v$(OWLVERSION)/bin/vm owl-v$(OWLVERSION)/fasl/init.fasl
 
 bin/blab: blab.c
 	mkdir -p bin
@@ -65,8 +65,8 @@ uninstall:
 
 get-owl:
 	# fetching and building owl to build radamsa
-	test -d owl-$(OWLVERSION) || curl -L https://github.com/aoh/owl-lisp/archive/v$(OWLVERSION).tar.gz | tar -zxvf -
-	cd owl-$(OWLVERSION) && make bin/vm
+	test -d owl-v$(OWLVERSION) || curl -L https://gitlab.com/owl-lisp/owl/-/archive/v$(OWLVERSION)/owl-v$(OWLVERSION).tar.gz | tar -zxvf -
+	cd owl-v$(OWLVERSION) && make bin/vm
 
 .PHONY: install clean test everything uninstall testi get-owl
 
