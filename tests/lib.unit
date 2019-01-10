@@ -1,9 +1,0 @@
-output = 42 lib.plus 42
-
-foo = 43 43 43 43
-
-lib {
-   foo = ""
-   plus = foo 43 foo
-}
-

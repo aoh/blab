@@ -1,8 +1,0 @@
-S = NP s VP
-NP = N 
-N = A s N2
-A = "a"
-N2 = "cat"
-V = "saw"
-VP = V s N
-s = 32

@@ -1,7 +1,0 @@
-
-output = foo 10
-
-foo = "correct"
-
-foo = "wrong"
-

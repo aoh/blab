@@ -1,9 +1,0 @@
-##
-## SVG 1.1
-##
-
-svg {
-   document = "<svg></svg>"
-}
-
-svg = svg.document
